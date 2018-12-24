@@ -1,6 +1,7 @@
 //GLOBAL VARIABLES: ****************************************************//
 require("dotenv").config();
 const keys = require('./keys');
+const fs = require('fs');
 const [, , liriCommand, ...clArgs] = process.argv;
 clArg = clArgs.join(' ');
 const axios = require('axios');
@@ -67,35 +68,41 @@ const formatOmdb = (movieData) => {
 //***********************************************************************//
 
 
-const lirify = (command) => {
+const lirify = (command, arg) => {
     switch (command) {
         case ('concert-this'): {
-            searchBandsintown(clArg)
+            searchBandsintown(arg)
             .then((response) => {
                 console.log( formatBandsintown(response.data) );
             })
             break;
         }
         case ('spotify-this-song'): {
-            searchSpotify(clArg)
+            searchSpotify(arg)
             .then((response) => {
                 console.log( formatSpotify(response.tracks.items[0]) );
             })
             break;
         }
         case ('movie-this'): {
-            searchOmdb(clArg)
+            searchOmdb(arg)
             .then((response) => {
                 console.log( formatOmdb(response.data) );
             })
             break;
         }
         case ('do-what-it-says'): {
+            fs.readFile('./random.txt', 'utf8', (err,data) => {
+                if (err) {
+                  return console.log(err);
+                }
+                const [fileCommand, ...fileArgs] = data.split(',');
+                fileArg = fileArgs.join(' ');
+                lirify(fileCommand, fileArg);
+              });
             break;
         }
     }
 }
 
-
-
-lirify(liriCommand);
+lirify(liriCommand, clArg);
