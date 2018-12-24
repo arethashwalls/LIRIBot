@@ -13,8 +13,8 @@ const Spotify = require('node-spotify-api');
 const searchBandsintown = (band) => {
     return axios.get(`https://rest.bandsintown.com/artists/${band}/events?app_id=codingbootcamp`);
 }
-const formatBandsintown = (concerts) => {
-    const formattedConcerts = '\nUPCOMING CONCERTS:\n---------------------\n' + concerts.map(concert => {
+const formatBandsintown = (concertData) => {
+    const formattedConcerts = '\nUPCOMING CONCERTS:\n---------------------\n' + concertData.map(concert => {
         return `Venue: ${concert.venue.name}
         \rLocation: ${concert.venue.city}, ${concert.venue.region} ${concert.venue.country}
         \rDate: ${moment(concert.datetime.split('T')[0], 'YYYY-MM-DD').format('MM/DD/YYYY')}`
@@ -32,20 +32,39 @@ const spotify = new Spotify({
 });
 //Return a promise from a search, default to The Sign:
 const searchSpotify = (song = 'the sign ace of base') => {
-    return spotify.search({ type: 'track', query: clArg });
+    return spotify.search({ type: 'track', query: song });
 }
 //Format the result of a spotify promise:
-const formatSpotify = (song) => {
+const formatSpotify = (songData) => {
     const { 
         artists: [{ name: artist }], 
         name, external_urls: { spotify: preview }, 
         album: { name: album } 
-    } = song;
+    } = songData;
     return `Artist: ${artist}\nTrack title: ${name}\nPreview: ${preview}\nAlbum: ${album}`;
 }
 //***********************************************************************//
 
+//OMDB: *****************************************************************//
+const searchOmdb = (movie) => {
+    return axios.get(`http://www.omdbapi.com/?apikey=trilogy&t=${movie}&type=movie`);
+}
 
+const formatOmdb = (movieData) => {
+    const {
+        Title: title,
+        Released: date,
+        Ratings: [imdbRating, rtRating, ],
+        Country: country,
+        Language: language,
+        Plot: plot,
+        Actors: actors
+    } = movieData;
+    return `Title: ${title}\nReleased: ${date.split(' ')[2]}\nIMDB Rating: ${imdbRating.Value}
+    \rRotten Tomatoes Rating: ${rtRating.Value}\nCountry: ${country}\nLanguage: ${language}
+    \rPlot: ${plot}Staring: ${actors}`
+}
+//***********************************************************************//
 
 
 const lirify = (command) => {
@@ -65,6 +84,10 @@ const lirify = (command) => {
             break;
         }
         case ('movie-this'): {
+            searchOmdb(clArg)
+            .then((response) => {
+                console.log( formatOmdb(response.data) );
+            })
             break;
         }
         case ('do-what-it-says'): {
