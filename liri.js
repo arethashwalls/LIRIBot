@@ -15,7 +15,7 @@ const searchBandsintown = (band) => {
     return axios.get(`https://rest.bandsintown.com/artists/${band}/events?app_id=codingbootcamp`);
 }
 const formatBandsintown = (concertData) => {
-    const formattedConcerts = '\nUPCOMING CONCERTS:\n---------------------\n' + concertData.map(concert => {
+    const formattedConcerts = '\nUPCOMING CONCERTS:\n---------------------\n' + concertData.data.map(concert => {
         return `Venue: ${concert.venue.name}
         \rLocation: ${concert.venue.city}, ${concert.venue.region} ${concert.venue.country}
         \rDate: ${moment(concert.datetime.split('T')[0], 'YYYY-MM-DD').format('MM/DD/YYYY')}`
@@ -41,54 +41,52 @@ const formatSpotify = (songData) => {
         artists: [{ name: artist }], 
         name, external_urls: { spotify: preview }, 
         album: { name: album } 
-    } = songData;
+    } = songData.tracks.items[0];
     return `Artist: ${artist}\nTrack title: ${name}\nPreview: ${preview}\nAlbum: ${album}`;
 }
 //***********************************************************************//
 
 //OMDB: *****************************************************************//
-const searchOmdb = (movie) => {
+const searchOmdb = (movie = 'mr nobody') => {
     return axios.get(`http://www.omdbapi.com/?apikey=trilogy&t=${movie}&type=movie`);
 }
-
 const formatOmdb = (movieData) => {
     const {
-        Title: title,
-        Released: date,
-        Ratings: [imdbRating, rtRating, ],
-        Country: country,
-        Language: language,
-        Plot: plot,
-        Actors: actors
-    } = movieData;
-    return `Title: ${title}\nReleased: ${date.split(' ')[2]}\nIMDB Rating: ${imdbRating.Value}
-    \rRotten Tomatoes Rating: ${rtRating.Value}\nCountry: ${country}\nLanguage: ${language}
+        Title: title = 'N/A',
+        Released: date = 'N/A',
+        Ratings: [imdbRating = 'N/A', rtRating = 'N/A', ],
+        Country: country = 'N/A',
+        Language: language = 'N/A',
+        Plot: plot = 'N/A',
+        Actors: actors = 'N/A'
+    } = movieData.data;
+    return `Title: ${title}\nReleased: ${date.split(' ')[2]}\nIMDB Rating: ${imdbRating.Value || 'N/A'}
+    \rRotten Tomatoes Rating: ${rtRating.Value || 'N/A'}\nCountry: ${country}\nLanguage: ${language}
     \rPlot: ${plot}Staring: ${actors}`
 }
 //***********************************************************************//
 
+const searchAndFormat = (searchFunc, formatFunc, arg) => {
+    searchFunc(arg)
+    .then((response) => {
+        console.log( formatFunc(response) );
+    })
+    .catch(function (err) {
+        console.log(err);
+    });
+}
 
 const lirify = (command, arg) => {
     switch (command) {
         case ('concert-this'): {
-            searchBandsintown(arg)
-            .then((response) => {
-                console.log( formatBandsintown(response.data) );
-            })
-            break;
+            searchAndFormat(searchBandsintown, formatBandsintown, arg);
         }
         case ('spotify-this-song'): {
-            searchSpotify(arg)
-            .then((response) => {
-                console.log( formatSpotify(response.tracks.items[0]) );
-            })
+            searchAndFormat(searchSpotify, formatSpotify, arg);
             break;
         }
         case ('movie-this'): {
-            searchOmdb(arg)
-            .then((response) => {
-                console.log( formatOmdb(response.data) );
-            })
+            searchAndFormat(searchOmdb, formatOmdb, arg);
             break;
         }
         case ('do-what-it-says'): {
@@ -105,4 +103,4 @@ const lirify = (command, arg) => {
     }
 }
 
-lirify(liriCommand, clArg);
+clArg ? lirify(liriCommand, clArg) : lirify(liriCommand);
