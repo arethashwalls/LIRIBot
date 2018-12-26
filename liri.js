@@ -15,13 +15,13 @@ const searchBandsintown = (band) => {
     return axios.get(`https://rest.bandsintown.com/artists/${band}/events?app_id=codingbootcamp`);
 }
 const formatBandsintown = (concertData) => {
+    if(!concertData.data.venue) return 'Artist not found.';
     const formattedConcerts = '\nUPCOMING CONCERTS:\n---------------------\n' + concertData.data.map(concert => {
         return `Venue: ${concert.venue.name}
         \rLocation: ${concert.venue.city}, ${concert.venue.region} ${concert.venue.country}
         \rDate: ${moment(concert.datetime.split('T')[0], 'YYYY-MM-DD').format('MM/DD/YYYY')}`
         
     }).join('\n---------------------\n') + '\n';
-    
     return formattedConcerts;
 }
 //***********************************************************************//
@@ -37,10 +37,11 @@ const searchSpotify = (song = 'the sign ace of base') => {
 }
 //Format the result of a spotify promise:
 const formatSpotify = (songData) => {
+    if(songData.tracks.total === 0) return 'Song not found.'
     const { 
-        artists: [{ name: artist }], 
-        name, external_urls: { spotify: preview }, 
-        album: { name: album } 
+        artists: [{ name: artist = 'N/A'}], 
+        name = 'N/A', external_urls: { spotify: preview = 'N/A'}, 
+        album: { name: album  = 'N/A'} 
     } = songData.tracks.items[0];
     return `Artist: ${artist}\nTrack title: ${name}\nPreview: ${preview}\nAlbum: ${album}`;
 }
@@ -51,6 +52,7 @@ const searchOmdb = (movie = 'mr nobody') => {
     return axios.get(`http://www.omdbapi.com/?apikey=trilogy&t=${movie}&type=movie`);
 }
 const formatOmdb = (movieData) => {
+    if(movieData.data.Response = 'False') return 'Movie not found.'
     const {
         Title: title = 'N/A',
         Released: date = 'N/A',
@@ -62,7 +64,7 @@ const formatOmdb = (movieData) => {
     } = movieData.data;
     return `Title: ${title}\nReleased: ${date.split(' ')[2]}\nIMDB Rating: ${imdbRating.Value || 'N/A'}
     \rRotten Tomatoes Rating: ${rtRating.Value || 'N/A'}\nCountry: ${country}\nLanguage: ${language}
-    \rPlot: ${plot}Staring: ${actors}`
+    \rPlot: ${plot}\nStaring: ${actors}`
 }
 //***********************************************************************//
 
@@ -71,7 +73,7 @@ const searchAndFormat = (searchFunc, formatFunc, arg) => {
     .then((response) => {
         console.log( formatFunc(response) );
     })
-    .catch(function (err) {
+    .catch((err) => {
         console.log(err);
     });
 }
@@ -80,8 +82,10 @@ const lirify = (command, arg) => {
     switch (command) {
         case ('concert-this'): {
             searchAndFormat(searchBandsintown, formatBandsintown, arg);
+            break;
         }
         case ('spotify-this-song'): {
+            //modify to deal with unknown songs
             searchAndFormat(searchSpotify, formatSpotify, arg);
             break;
         }
