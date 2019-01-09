@@ -15,7 +15,7 @@ const searchBandsintown = (band) => {
     return axios.get(`https://rest.bandsintown.com/artists/${band}/events?app_id=codingbootcamp`);
 }
 const formatBandsintown = (concertData) => {
-    if(!concertData.data.venue) return 'Artist not found.';
+    if(!concertData.data[0].venue) return '\nArtist not found.\n';
     const formattedConcerts = '\nUPCOMING CONCERTS:\n---------------------\n' + concertData.data.map(concert => {
         return `Venue: ${concert.venue.name}
         \rLocation: ${concert.venue.city}, ${concert.venue.region} ${concert.venue.country}
@@ -38,12 +38,16 @@ const searchSpotify = (song = 'the sign ace of base') => {
 //Format the result of a spotify promise:
 const formatSpotify = (songData) => {
     if(songData.tracks.total === 0) return 'Song not found.'
-    const { 
-        artists: [{ name: artist = 'N/A'}], 
-        name = 'N/A', external_urls: { spotify: preview = 'N/A'}, 
-        album: { name: album  = 'N/A'} 
-    } = songData.tracks.items[0];
-    return `Artist: ${artist}\nTrack title: ${name}\nPreview: ${preview}\nAlbum: ${album}`;
+    let songsString = '';
+    songData.tracks.items.forEach(song => {
+        const { 
+            artists: [{ name: artist = 'N/A'}], 
+            name = 'N/A', external_urls: { spotify: preview = 'N/A'}, 
+            album: { name: album  = 'N/A'} 
+        } = song;
+        songsString += `\nArtist: ${artist}\nTrack title: ${name}\nPreview: ${preview}\nAlbum: ${album}\n`
+    })
+    return songsString;
 }
 //***********************************************************************//
 
@@ -52,7 +56,7 @@ const searchOmdb = (movie = 'mr nobody') => {
     return axios.get(`http://www.omdbapi.com/?apikey=trilogy&t=${movie}&type=movie`);
 }
 const formatOmdb = (movieData) => {
-    if(movieData.data.Response = 'False') return 'Movie not found.'
+    if(movieData.data.Response === 'False') return 'Movie not found.'
     const {
         Title: title = 'N/A',
         Released: date = 'N/A',
@@ -62,9 +66,9 @@ const formatOmdb = (movieData) => {
         Plot: plot = 'N/A',
         Actors: actors = 'N/A'
     } = movieData.data;
-    return `Title: ${title}\nReleased: ${date.split(' ')[2]}\nIMDB Rating: ${imdbRating.Value || 'N/A'}
+    return `\nTitle: ${title}\nReleased: ${date.split(' ')[2]}\nIMDB Rating: ${imdbRating.Value || 'N/A'}
     \rRotten Tomatoes Rating: ${rtRating.Value || 'N/A'}\nCountry: ${country}\nLanguage: ${language}
-    \rPlot: ${plot}\nStaring: ${actors}`
+    \rPlot: ${plot}\nStaring: ${actors}\n`
 }
 //***********************************************************************//
 
