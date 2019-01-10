@@ -72,8 +72,8 @@ const formatOmdb = (movieData) => {
 }
 //***********************************************************************//
 
-const searchAndFormat = (searchFunc, formatFunc, arg) => {
-    searchFunc(arg)
+const searchAndFormat = (searchFunc, formatFunc, searchTerm) => {
+    searchFunc(searchTerm);
     .then((response) => {
         console.log( formatFunc(response) );
     })
@@ -104,9 +104,15 @@ const lirify = (command, arg) => {
                 }
                 const [fileCommand, ...fileArgs] = data.split(',');
                 fileArg = fileArgs.join(' ');
+                if(fileCommand === 'do-what-it-says') {
+                    return '\nCannot call do-what-it-says recursively.\n';
+                }
                 lirify(fileCommand, fileArg);
               });
             break;
+        }
+        default: {
+            return '\nCommand not found.\n'
         }
     }
 }
