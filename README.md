@@ -23,4 +23,14 @@ LIRIBot's core functionality can be found in `liri.js`.
 * The first command line argument is stored as `liriCommand`.
 * All other command line arguments are joined into `clArg`.
 
-Next, for each API two functions are defined, one for calling the API and one for formatting the resultant data. BandsInTown and OMBD are called with [Axios](https://www.npmjs.com/package/axios)
+Next, for each API two functions are defined, one for calling the API and one for formatting the resultant data. BandsInTown and OMBD are called with [Axios](https://www.npmjs.com/package/axios) while Spotify is called with its own [API library](https://www.npmjs.com/package/node-spotify-api).
+
+Once a call and format function has been defined for each API, I define a more abstract `searchAndFormat` function that takes a call function, a format function, and a search term as arguments.
+
+I then define a `lirify` function composed of a switch statement with a case for each command.
+* `concert-this` calls BandsInTown and returns a list of all upcoming concerts by the given artist.
+* `spotify-this-song` calls Spotify and returns information on all Spotify tracks with the given title.
+* `movie-this` calls OMBD and returns information on a movie with the given title.
+* `do-what-it-says` reads `random.txt` and calls `lirify` with the command and argument given.
+
+Finally, I call the `lirify` function with `clArg` if it exists and without it if not.
