@@ -73,7 +73,7 @@ const formatOmdb = (movieData) => {
 //***********************************************************************//
 
 const searchAndFormat = (searchFunc, formatFunc, searchTerm) => {
-    searchFunc(searchTerm);
+    searchFunc(searchTerm)
     .then((response) => {
         console.log( formatFunc(response) );
     })
